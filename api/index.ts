@@ -13,7 +13,7 @@ const storage = multer.diskStorage({
     },
     filename: function (req, file, cb) {
         cb(null, file.fieldname + '-' + Date.now() + '.' + file.originalname.split('.').pop())
-    }
+    },
 });
 
 const upload = multer({ storage: storage });
@@ -39,7 +39,20 @@ app.get('/api', (req: Request, res: Response) => {
     res.send('Hello World from Food Analyser!');
 });
 
-app.post('/api/analyze-food', upload.single('photo'), async (req: Request, res: Response) => {
+function uploadFile(req, res, next) {
+    const upload = multer().single('photo');
+
+    upload(req, res, function (err) {
+        if (err instanceof multer.MulterError) {
+            console.log('Multer error:', err);
+        } else if (err) {
+            console.log('Unknown error:', err);
+        }
+        next()
+    })
+}
+
+app.post('/api/analyze-food', uploadFile, async (req: Request, res: Response) => {
     try {
         const { description } = req.body;
         if (!description && !req.file?.path) {
