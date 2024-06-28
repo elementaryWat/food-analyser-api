@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import OpenAI from 'openai';
 import dotenv from 'dotenv';
-import { NUTRITION_ANALYSIS_PROMPT, NUTRITION_ANALYSIS_PROMPT_WITH_PHOTO } from './utils/prompts';
+import { NUTRITION_ANALYSIS_PROMPT, NUTRITION_ANALYSIS_PROMPT_WITH_PHOTO } from '../utils/prompts';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
@@ -35,7 +35,7 @@ function encodeImage(imagePath: string): string {
     return Buffer.from(image).toString('base64');
 }
 
-app.get('/', (req: Request, res: Response) => {
+app.get('/api', (req: Request, res: Response) => {
     res.send('Hello World from Food Analyser!');
 });
 
