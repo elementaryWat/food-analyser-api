@@ -2,9 +2,9 @@
   "name": "food-analyser-api",
   "version": "1.0.0",
   "description": "",
-  "main": "index.ts",
+  "main": "index.js",
   "scripts": {
-    "start": "node index.ts",
+    "start": "node index.js",
     "start-dev": "nodemon ./build/api/index.js",
     "build": "tsc"
   },
