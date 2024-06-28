@@ -25,14 +25,24 @@ To use the Food Analysis API, follow these steps:
 
 ### Text Analysis
 
-```json
-{
-  "description": "A slice of pepperoni pizza"
-}
+To analyze the food item using a food description, you can make a `curl` request as follows:
+
+```bash
+curl --location 'https://food-analyser-api.vercel.app/api/analyze-food' \
+--header 'Content-Type: application/json' \
+--data '{
+        "description":"Creamy Garlic Skillet Chicken with Spinach is a delicious and comforting dish that combines tender chicken breasts cooked in a creamy garlic sauce with fresh spinach. Here'\''s a general overview of the ingredients and steps involved in making this dish: Ingredients: Chicken breastsOlive oil or butter Garlic cloves, minced Heavy cream or half-and-half Chicken broth Parmesan cheese, gratedFresh spinach Salt and pepperOptional: red pepper flakes, lemon juice, fresh herbs (e.g., parsley or basil)"
+}'
 ```
 
 ## Image Analysis
-Submit an image file with your request.
+Submit an image file with your request. Please note that the API only accepts image files in PNG or JPG formats.
+
+Example curl request for image analysis:
+```bash
+curl --location 'https://food-analyser-api.vercel.app/api/analyze-food' \
+--form 'photo=@"/Users/augustoromero/Downloads/chicken with rice.jpg"'
+```
 
 ## Response Format
 The API returns a JSON response containing the macronutrient breakdown:
