@@ -1,28 +1,18 @@
-import express, { Request, Response } from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import OpenAI from 'openai';
 import dotenv from 'dotenv';
+import bodyParser from 'body-parser';
 import { NUTRITION_ANALYSIS_PROMPT, NUTRITION_ANALYSIS_PROMPT_WITH_PHOTO } from '../utils/prompts';
-import multer from 'multer';
+import fileUpload, { UploadedFile } from 'express-fileupload';
 import fs from 'fs';
-import path from 'path';
-
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'uploads/')
-    },
-    filename: function (req, file, cb) {
-        cb(null, file.fieldname + '-' + Date.now() + '.' + file.originalname.split('.').pop())
-    },
-});
-
-const upload = multer({ storage: storage });
 
 dotenv.config();
 
 const app = express();
 
 app.use(cors());
+app.use(fileUpload());
 app.use(express.json());
 
 const openai = new OpenAI({
@@ -35,32 +25,23 @@ function encodeImage(imagePath: string): string {
     return Buffer.from(image).toString('base64');
 }
 
+
 app.get('/api', (req: Request, res: Response) => {
     res.send('Hello World from Food Analyser!');
 });
 
-function uploadFile(req, res, next) {
-    const upload = multer().single('photo');
-
-    upload(req, res, function (err) {
-        if (err instanceof multer.MulterError) {
-            console.log('Multer error:', err);
-        } else if (err) {
-            console.log('Unknown error:', err);
-        }
-        next()
-    })
-}
-
-app.post('/api/analyze-food', uploadFile, async (req: Request, res: Response) => {
+app.post('/api/analyze-food', async (req: Request, res: Response) => {
     try {
         const { description } = req.body;
-        if (!description && !req.file?.path) {
+        console.log(req.files);
+        let photo = req.files?.photo as UploadedFile
+
+        if (!description && !photo) {
             return res.status(400).send({ error: 'Description or photo are required' });
         }
         let response;
-        if (req.file) {
-            const base64Image = encodeImage((req.file as any).path);
+        if (photo) {
+            let bufferData = Buffer.from(photo.data.toString('base64'))
             response = await openai.chat.completions.create({
                 model: "gpt-4o",
                 messages: [
@@ -71,7 +52,7 @@ app.post('/api/analyze-food', uploadFile, async (req: Request, res: Response) =>
                             {
                                 type: "image_url",
                                 image_url: {
-                                    url: `data:image/jpeg;base64,${base64Image}`
+                                    url: `data:${photo.mimetype};base64,${bufferData}`
                                 }
                             }
                         ]
@@ -85,12 +66,6 @@ app.post('/api/analyze-food', uploadFile, async (req: Request, res: Response) =>
                 response_format: {
                     type: "json_object"
                 }
-            });
-            fs.unlink(req.file.path, (err) => {
-                if (err) {
-                    console.error("Error deleting the file:", err);
-                }
-                console.log("File deleted successfully");
             });
         } else {
             console.log(description);
